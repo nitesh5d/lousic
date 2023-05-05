@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Lousic</string>
+    <string name="have_account"><b>I have an Account</b></string>
+    <string name="create_account"><b>Create an Account</b></string>
+    <string name="sign_in_with"><b>Sign in with</b></string>
+    <string name="log_in"><b>Log In</b></string>
+    <string name="sign_up"><b>Sign Up</b></string>
+    <string name="verify_now">Verify Now</string>
+</resources>

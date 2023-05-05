@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "738916866657",
+    "project_id": "fivedegree-lousic",
+    "storage_bucket": "fivedegree-lousic.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:738916866657:android:da961f26493f49dc64e820",
+        "android_client_info": {
+          "package_name": "in.fivedegree.lousic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "738916866657-v90j36hkk7r5atvop23a62vvmaamdinr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPlTO9nSnFQUN1uZ4XIt0ks86pqgkgW7M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "738916866657-ggk85jdrbfkv9500i9riojj5obkf1if7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
