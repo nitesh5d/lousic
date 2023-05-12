@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "738916866657-8vp2rbkoavp5plthq4gifh9gjl08r4ua.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.fivedegree.lousic",
+            "certificate_hash": "60954db207441e62743e5b0ede29c5a9c1b16b4d"
+          }
+        },
+        {
           "client_id": "738916866657-v90j36hkk7r5atvop23a62vvmaamdinr.apps.googleusercontent.com",
           "client_type": 3
         }
