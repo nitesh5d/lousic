@@ -6,4 +6,7 @@
     <string name="log_in"><b>Log In</b></string>
     <string name="sign_up"><b>Sign Up</b></string>
     <string name="verify_now">Verify Now</string>
+    <string name="g_sign"><b>Google</b></string>
+    <string name="f_sign"><b>Facebook</b></string>
+    <string name="need_help"><b>Need Help</b></string>
 </resources>

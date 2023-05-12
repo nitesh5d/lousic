@@ -1,24 +1,26 @@
 package `in`.fivedegree.lousic
 
+import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
 import android.text.TextUtils
+import android.text.TextWatcher
 import android.util.Patterns
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.annotation.Nullable
-import androidx.appcompat.app.AlertDialog
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -29,10 +31,11 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.squareup.picasso.Picasso
+import com.release.gfg1.DBHelper
 import `in`.fivedegree.lousic.databinding.ActivitySignUpBinding
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 private const val RC_SIGN_IN = 100
 
@@ -41,7 +44,18 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignUpBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+
     lateinit var sharedPreferences: SharedPreferences
+    val sdk = Build.VERSION.SDK_INT
+    private var dpUpdated: Boolean = false
+
+    private lateinit var emailFinal: String
+    private lateinit var nameFinal: String
+    private lateinit var dpUrlFinal: String
+    private lateinit var signUpDateFinal: String
+    private lateinit var signUpTimeFinal: String
+    private lateinit var lognDateFinal: String
+    private lateinit var lognTimeFinal: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,14 +65,15 @@ class SignUpActivity : AppCompatActivity() {
 
         val rootView = findViewById<View>(android.R.id.content)
         auth = Firebase.auth
-        sharedPreferences =  getSharedPreferences("signup_process", Context.MODE_PRIVATE)
-        var isRegistered = sharedPreferences.getString("isRegistered",null)
-        var isVerified = sharedPreferences.getString("isEmailVerified",null)
-        var isSetupDone = sharedPreferences.getString("isEmailVerified",null)
+
 
         val mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post(object : Runnable {
             override fun run() {
+                sharedPreferences =  getSharedPreferences("signup_process", Context.MODE_PRIVATE)
+                var isRegistered = sharedPreferences.getString("isRegistered",null)
+                var isVerified = sharedPreferences.getString("isEmailVerified",null)
+                var isSetupDone = sharedPreferences.getString("isSetupDone",null)
                 if (isRegistered == "true"){
                     binding.mainCont.visibility = View.GONE
                     binding.emailVerifyCont.visibility = View.VISIBLE
@@ -105,15 +120,17 @@ class SignUpActivity : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         // check if user is already signed in
         val account = GoogleSignIn.getLastSignedInAccount(this)
-        binding.googleSignIn.setOnClickListener {
+        binding.gSignIn.setOnClickListener {
             binding.loading.visibility = View.VISIBLE
             if (account != null) {
-                firebaseAuthWithGoogle(account.idToken!!)
+                firebaseAuthWithGoogle(account)
             } else {
                 val signInIntent = googleSignInClient.signInIntent
-                startActivityForResult(signInIntent, RC_SIGN_IN)
+                launcher.launch(signInIntent)
             }
         }
+
+        binding.fSignIn.setOnClickListener { snackbarShow("Facebook Sign In not implemented yet.", rootView) }
 
         binding.openEmailApp.setOnClickListener {
             val verifyIntent = Intent(Intent.ACTION_MAIN)
@@ -149,7 +166,74 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         binding.dpimageView.setOnClickListener {
+            ImagePicker.with(this)
+                .cropSquare() //Crop image(Optional), Check Customization for more option
+                .compress(1024)			//Final image size will be less than 1 MB(Optional)
+                .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                .start()
+        }
 
+        binding.usernameEt.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.textView3.text = "Let's setup\nyour Profile ${s.toString()}"
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        binding.setupDone.setOnClickListener {
+            val nameFinal: String = binding.usernameEt.text.toString().trim()
+            if (TextUtils.isEmpty(nameFinal)){
+                binding.usernameEt.error = "Please Type your Name."
+                binding.usernameEt.requestFocus()
+            }
+            else{
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+                val db = DBHelper(this, null)
+                if (uid != null){
+                    db.addName(nameFinal, uid)
+                    val editor = sharedPreferences.edit()
+                    editor.apply{
+                        putString("isSetupDone","true")
+                    }.apply()
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(intent)
+                    finish()
+                }
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            dpUrlFinal = data?.data.toString()
+            binding.dpimageView.setImageURI(data?.data)
+            if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                binding.dpimageBorder.setBackgroundDrawable(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_green));
+            } else {
+                binding.dpimageBorder.setBackground(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_green))
+            }
+            dpUpdated = true
+        } else if (resultCode == ImagePicker.RESULT_ERROR) {
+            if (!dpUpdated){
+                if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                    binding.dpimageBorder.setBackgroundDrawable(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red));
+                } else {
+                    binding.dpimageBorder.setBackground(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red))
+                }
+            }
+            Toast.makeText(this, "Error: "+ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
+        } else {
+            if (!dpUpdated){
+                if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                    binding.dpimageBorder.setBackgroundDrawable(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red));
+                } else {
+                    binding.dpimageBorder.setBackground(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red))
+                }
+            }
+            Toast.makeText(this, "Couldn't select a Photo. Please try again.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -184,6 +268,7 @@ class SignUpActivity : AppCompatActivity() {
                         auth.currentUser!!.sendEmailVerification()
                         binding.loading.visibility = View.GONE
                         snackbarShow("SignUp Successful! Verify you Email Address", rootView)
+                        emailFinal = email
                     } else {
                         binding.loading.visibility = View.GONE
                         snackbarShow("SignUp Failed!"+ task.exception, rootView)
@@ -199,8 +284,21 @@ class SignUpActivity : AppCompatActivity() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     binding.loading.visibility = View.GONE
+                    val editor = sharedPreferences.edit()
+                    editor.apply{
+                        putString("isRegistered","true")
+                    }.apply()
+                    val user = FirebaseAuth.getInstance().currentUser
+                    user?.reload()?.addOnCompleteListener {
+                        val isEmailVerified = user.isEmailVerified
+                        if (isEmailVerified) {
+                            editor.apply{
+                                putString("isEmailVerified","true")
+                            }.apply()
+                        }
+                    }
                     val isEmailVerified = sharedPreferences.getString("isEmailVerified",null)
-                    val isSetupDone = sharedPreferences.getString("isEmailVerified",null)
+                    val isSetupDone = sharedPreferences.getString("isSetupDone",null)
                     if(isEmailVerified == "true" && isSetupDone == "true"){
                         val intent = Intent(this, MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -235,26 +333,38 @@ class SignUpActivity : AppCompatActivity() {
             }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        result ->
         val rootView = findViewById<View>(android.R.id.content)
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+
+        if (result.resultCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
-                val account = task.getResult(ApiException::class.java)!!
-                firebaseAuthWithGoogle(account.idToken!!)
+                val account: GoogleSignInAccount = task.result
+                if (account != null){
+                    firebaseAuthWithGoogle(account)
+                }
+
             } catch (e: ApiException) {
                 binding.loading.visibility = View.GONE
-                 snackbarShow("Error Occured: "+e.statusCode.toString(), rootView)
+                 snackbarShow("Error Occured: "+e.message, rootView)
             }
+        }
+        else{
+            binding.loading.visibility = View.GONE
+            snackbarShow("Error Occured", rootView)
         }
     }
 
-    private fun firebaseAuthWithGoogle(idToken: String) {
+    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) {
         val rootView = findViewById<View>(android.R.id.content)
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+        val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         auth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
+                emailFinal = account.email.toString()
+                nameFinal = account.displayName.toString()
+                dpUrlFinal = account.photoUrl.toString()
                 binding.loading.visibility = View.GONE
                 val intent = Intent(this, MainActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -282,20 +392,20 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-    private fun getCurrentTime(): String? {
-        return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
-    }
-
-    private fun getCurrentDate(): String? {
-        return SimpleDateFormat("dd/LLL/yyyy", Locale.getDefault()).format(Date())
-    }
-
     private fun snackbarShow(msg: String, v: View) {
         val snackbar = Snackbar.make(v, msg, Snackbar.LENGTH_LONG)
         snackbar.duration = 2000
         snackbar.setBackgroundTint(resources.getColor(R.color.matte_black))
         snackbar.setTextColor(resources.getColor(R.color.white))
         snackbar.show()
+    }
+
+    private fun getCurrentTime(): String? {
+        return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+    }
+
+    private fun getCurrentDate(): String? {
+        return SimpleDateFormat("dd/LLL/yyyy", Locale.getDefault()).format(Date())
     }
 
     private fun hideKeybaord(v: View) {
@@ -312,20 +422,20 @@ class SignUpActivity : AppCompatActivity() {
         sharedPreferences =  getSharedPreferences("signup_process", Context.MODE_PRIVATE)
         var isRegistered = sharedPreferences.getString("isRegistered",null)
         var isVerified = sharedPreferences.getString("isEmailVerified",null)
-        var isSetupDone = sharedPreferences.getString("isEmailVerified",null)
+        var isSetupDone = sharedPreferences.getString("isSetupDone",null)
 
+        if (isRegistered =="true" && isVerified == "true" && isSetupDone =="true"){
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+            finish()
+        }
         if (currentUser != null) {
             if(auth.currentUser?.isEmailVerified == true){
                 val editor = sharedPreferences.edit()
                 editor.apply{
                     putString("isEmailVerified","true")
                 }.apply()
-            }
-            if (isRegistered =="true" && isVerified == "true" && isSetupDone =="true"){
-                val intent = Intent(this, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-                finish()
             }
         }
     }

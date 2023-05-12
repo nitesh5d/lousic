@@ -4,7 +4,8 @@
     <!--on below line we are adding gradient and
     specifying start and end color with angle-->
     <solid
-        android:color="#4CAF50"/>
+        android:color="#000000"/>
+    <stroke android:color="#4CAF50" android:width="2dp"/>
     <corners android:radius="100dp"/>
 
 </shape>

@@ -32,10 +32,40 @@
         app:layout_constraintTop_toBottomOf="@+id/lousic" />
 
     <LinearLayout
+        android:id="@+id/helpBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="3dp"
+            android:src="@drawable/help"
+            app:tint="#e5e5e5" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_bold"
+            android:text="@string/need_help"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/mainCont"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:animateLayoutChanges="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -96,13 +126,15 @@
                     android:id="@+id/pw_et"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:autofillHints="emailAddress"
+                    android:autofillHints="password"
                     android:background="#000000"
                     android:textColor="@color/white"
                     android:fontFamily="@font/roboto"
                     android:hint="********"
+                    app:passwordToggleEnabled="true"
                     android:letterSpacing=".2"
                     android:inputType="textPassword"
+
                     android:maxLines="1"
                     android:padding="15dp" />
 
@@ -155,15 +187,69 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
                     android:padding="10dp"
+                    android:gravity="center"
                     android:orientation="horizontal">
 
-                    <com.google.android.gms.common.SignInButton
-                        android:id="@+id/googleSignIn"
+                    <LinearLayout
+                        android:id="@+id/g_signIn"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:gravity="center"
+                        android:background="@drawable/ripple_effect"
+                        android:paddingEnd="20dp"
+                        android:paddingStart="20dp"
+                        android:layout_marginEnd="5dp">
 
+                        <ImageView
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_marginEnd="5dp"
+                            android:src="@drawable/google_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing=".1"
+                            android:text="@string/g_sign"
+                            android:textAllCaps="true"
+                            android:textColor="#e5e5e5"
+                            android:textSize="14dp"
+                            app:fontFamily="@font/roboto_bold" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/f_signIn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:gravity="center"
+                        android:background="@drawable/ripple_effect"
+                        android:paddingEnd="20dp"
+                        android:paddingStart="20dp"
+                        android:layout_marginStart="5dp">
+
+                        <ImageView
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_marginEnd="5dp"
+                            android:src="@drawable/facebook_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing=".1"
+                            android:text="@string/f_sign"
+                            android:textAllCaps="true"
+                            android:textColor="#e5e5e5"
+                            android:textSize="14dp"
+                            app:fontFamily="@font/roboto_bold" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -179,6 +265,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone"
+        android:animateLayoutChanges="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -291,6 +378,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone"
+        android:animateLayoutChanges="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -303,7 +391,7 @@
             android:fontFamily="@font/calistoga"
             android:paddingStart="30dp"
             android:letterSpacing=".2"
-            android:text="Let's setup\nyour Profile"
+            android:text="Let's setup \nyour Profile "
             android:textSize="26sp"/>
 
         <LinearLayout
@@ -317,7 +405,7 @@
                 android:id="@+id/dpimageBorder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="2dp"
+                android:padding="5dp"
                 android:background="@drawable/signup_dp_bg_white">
 
                 <de.hdodenhof.circleimageview.CircleImageView
@@ -346,7 +434,7 @@
                     android:letterSpacing=".1"
                     android:fontFamily="@font/roboto"
                     android:hint="Your Name"
-                    android:maxLength="40"
+                    android:maxLength="20"
                     android:maxLines="1"
                     android:padding="15dp" />
             </LinearLayout>
