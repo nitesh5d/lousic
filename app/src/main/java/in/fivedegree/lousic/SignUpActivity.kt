@@ -1,6 +1,7 @@
 package `in`.fivedegree.lousic
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -13,7 +14,9 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.Patterns
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -65,7 +68,6 @@ class SignUpActivity : AppCompatActivity() {
 
         val rootView = findViewById<View>(android.R.id.content)
         auth = Firebase.auth
-
 
         val mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post(object : Runnable {
@@ -167,9 +169,9 @@ class SignUpActivity : AppCompatActivity() {
 
         binding.dpimageView.setOnClickListener {
             ImagePicker.with(this)
-                .cropSquare() //Crop image(Optional), Check Customization for more option
-                .compress(1024)			//Final image size will be less than 1 MB(Optional)
-                .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                .cropSquare()
+                .compress(1024)
+                .maxResultSize(1080, 1080)
                 .start()
         }
 
@@ -203,29 +205,63 @@ class SignUpActivity : AppCompatActivity() {
                 }
             }
         }
+
+//        val dialog = Dialog(this@SignUpActivity)
+
+        binding.helpBtn.setOnClickListener {
+
+            binding.helpBox.visibility = View.VISIBLE
+
+//            dialog.setContentView(R.layout.fragment_sign_up_help_box)
+//            dialog.window!!.setLayout(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.WRAP_CONTENT
+//            )
+//            dialog.setCancelable(false)
+//            dialog.window!!.attributes.windowAnimations = R.style.animation
+//            dialog.show()
+//
+//            val resetSignUp = dialog.findViewById<LinearLayout>(R.id.resetSignUp)
+//            val resetPw = dialog.findViewById<LinearLayout>(R.id.resetPw)
+//
+//            resetSignUp.setOnClickListener(View.OnClickListener {
+//                dialog.dismiss()
+//                Toast.makeText(this@SignUpActivity, "okay clicked", Toast.LENGTH_SHORT).show()
+//            })
+//
+//            resetPw.setOnClickListener(View.OnClickListener {
+//                dialog.dismiss()
+//                Toast.makeText(this@SignUpActivity, "Cancel clicked", Toast.LENGTH_SHORT).show()
+//            })
+        }
+
+        binding.helpBoxClose.setOnClickListener { binding.helpBox.visibility = View.GONE }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
+    override fun onActivityResult(requestCode: Int, rCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, rCode, data)
+        if (rCode == Activity.RESULT_OK) {
             dpUrlFinal = data?.data.toString()
             binding.dpimageView.setImageURI(data?.data)
             if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
                 binding.dpimageBorder.setBackgroundDrawable(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_green));
             } else {
-                binding.dpimageBorder.setBackground(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_green))
+                binding.dpimageBorder.background = ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_green)
             }
             dpUpdated = true
-        } else if (resultCode == ImagePicker.RESULT_ERROR) {
+        }
+        else if (rCode == ImagePicker.RESULT_ERROR) {
             if (!dpUpdated){
                 if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
                     binding.dpimageBorder.setBackgroundDrawable(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red));
                 } else {
-                    binding.dpimageBorder.setBackground(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red))
+                    binding.dpimageBorder.background =
+                        ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red)
                 }
             }
             Toast.makeText(this, "Error: "+ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
-        } else {
+        }
+        else {
             if (!dpUpdated){
                 if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
                     binding.dpimageBorder.setBackgroundDrawable(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red));
@@ -233,7 +269,7 @@ class SignUpActivity : AppCompatActivity() {
                     binding.dpimageBorder.setBackground(ContextCompat.getDrawable(applicationContext, R.drawable.signup_dp_bg_red))
                 }
             }
-            Toast.makeText(this, "Couldn't select a Photo. Please try again.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "Couldn't select a photo. Please try again.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -344,7 +380,6 @@ class SignUpActivity : AppCompatActivity() {
                 if (account != null){
                     firebaseAuthWithGoogle(account)
                 }
-
             } catch (e: ApiException) {
                 binding.loading.visibility = View.GONE
                  snackbarShow("Error Occured: "+e.message, rootView)
@@ -373,7 +408,6 @@ class SignUpActivity : AppCompatActivity() {
             } else {
                 binding.loading.visibility = View.GONE
                 snackbarShow("Sign in failed"+ task.exception, rootView)
-                // ...
             }
         }
     }
